@@ -97,59 +97,8 @@ if __name__ == '__main__':
             format(epoch, training_time, loss))
 
         # print test evaluation metrics every N epochs (provided by args.eval_N)
-        if epoch % args.eval_N  == (args.eval_N - 1):
-            with torch.no_grad():
-                t2 = time()
-                recall, ndcg = eval_model(model.u_g_embeddings.detach(),
-                                          model.i_g_embeddings.detach(),
-                                          data_generator.R_train,
-                                          data_generator.R_test,
-                                          k)
-            print(
-                "Evaluate current model:\n",
-                "Epoch: {}, Validation time: {:.2f}s".format(epoch, time()-t2),"\n",
-                "Loss: {:.4f}:".format(loss), "\n",
-                "Recall@{}: {:.4f}".format(k, recall), "\n",
-                "NDCG@{}: {:.4f}".format(k, ndcg)
-                )
-
-            cur_best_metric, stopping_step, should_stop = \
-            early_stopping(recall, cur_best_metric, stopping_step, flag_step=5)
-
-            # save results in dict
-            results['Epoch'].append(epoch)
-            results['Loss'].append(loss)
-            results['Recall'].append(recall.item())
-            results['NDCG'].append(ndcg.item())
-            results['Training Time'].append(training_time)
-        else:
-            # save results in dict
-            results['Epoch'].append(epoch)
-            results['Loss'].append(loss)
-            results['Recall'].append(None)
-            results['NDCG'].append(None)
-            results['Training Time'].append(training_time)
-
+        
         if should_stop == True: break
 
     # save
-    if args.save_results:
-        date = today.strftime("%d%m%Y_%H%M")
-
-        # save model as .pt file
-        if os.path.isdir("./models"):
-            torch.save(model.state_dict(), "./models/" + str(date) + "_" + modelname + "_" + dataset + ".pt")
-        else:
-            os.mkdir("./models")
-            torch.save(model.state_dict(), "./models/" + str(date) + "_" + modelname + "_" + dataset + ".pt")
-
-        # save results as pandas dataframe
-        results_df = pd.DataFrame(results)
-        results_df.set_index('Epoch', inplace=True)
-        if os.path.isdir("./results"):
-            results_df.to_csv("./results/" + str(date) + "_" + modelname + "_" + dataset + ".csv")
-        else:
-            os.mkdir("./results")
-            results_df.to_csv("./results/" + str(date) + "_" + modelname + "_" + dataset + ".csv")
-        # plot loss
-        results_df['Loss'].plot(figsize=(12,8), title='Loss')
+    
