@@ -5,6 +5,7 @@
 * My Repository URL: https://github.com/witheunjin/NGCF-PT_ejlee
 
 ## [DATASETS]
+```
 |__ path: ~/NGCF-PT_ejlee/data
       |__ /100K/ratings.csv: 100K 개의 Ratings data
       |__ /1M/ratings.csv: 1M 개의 Ratings data
@@ -12,6 +13,7 @@
       |__ /25M/ratings.csv: 25M 개의 Ratings data
       |__ /27M/ratings.csv: 27M 개의 Ratings data
 *20M이상의 Dataset을 Training하려고 하면 'out of memory' 문제발생
+```
 
 ## [HOW TO USE(EXECUTE)]
 ~/NGCF-PT_ejlee에서 다음과 같은 명령어를 사용하여 실행
