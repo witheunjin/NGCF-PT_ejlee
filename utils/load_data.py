@@ -12,14 +12,29 @@ import random as rd
 import scipy.sparse as sp
 import torch
 from time import time
+import pandas as pd
 
 class Data(object):
     def __init__(self, path, batch_size):
         self.path = path
         self.batch_size = batch_size
-
-        train_file = path + '/train.txt'
-        test_file = path + '/test.txt'
+        
+        df= pd.read_csv(path + '/ratings.csv', header=None)
+        f=open(path+'/ratings.txt','w')
+        temp=df[0][0]
+        f.write(str(int(temp)))
+        f.write(' ')
+        for i in range(len(df)):
+            if(df[0][i]!=temp):
+                f.write('\n')
+                f.write(str(int(df[0][i])))
+                f.write(' ')
+                temp=df[0][i]
+            f.write(str(int(df[1][i])))
+            f.write(' ')
+        f.close()
+        train_file=path+'/ratings.txt'
+        test_file = '/home/ygkim/NGCF-PT_ejlee/data/ml-100k' + '/test.txt'
 
         #get number of users and items
         self.n_users, self.n_items = 0, 0
@@ -27,13 +42,18 @@ class Data(object):
         self.neg_pools = {}
 
         self.exist_users = []
-
+        
         # search train_file for max user_id/item_id
         with open(train_file) as f:
             for l in f.readlines():
                 if len(l) > 0:
+                    items=[]
                     l = l.strip('\n').split(' ')
-                    items = [int(i) for i in l[1:]]
+                    for i in l[1:]:
+                        try:
+                            items.append(int(i))
+                        except Exception:
+                            continue
                     # first element is the user_id, rest are items
                     uid = int(l[0])
                     self.exist_users.append(uid)
@@ -69,19 +89,24 @@ class Data(object):
         t1 = time()
         self.R_train = sp.dok_matrix((self.n_users, self.n_items), dtype=np.float32) 
         self.R_test = sp.dok_matrix((self.n_users, self.n_items), dtype=np.float32)
-
+        
         self.train_items, self.test_set = {}, {}
         with open(train_file) as f_train:
             with open(test_file) as f_test:
                 for l in f_train.readlines():
+                    items=[]
                     if len(l) == 0: break
-                    l = l.strip('\n')
-                    items = [int(i) for i in l.split(' ')]
-                    uid, train_items = items[0], items[1:]
+                    l = l.strip('\n').split(' ')    
+                    for i in l:
+                        try:
+                            items.append(int(i))
+                        except:
+                            continue
+                    uid, train_itemss = items[0], items[1:]
                     # enter 1 if user interacted with item
-                    for i in train_items:
+                    for i in train_itemss:
                         self.R_train[uid, i] = 1.
-                    self.train_items[uid] = train_items
+                    self.train_items[uid] = train_itemss
 
                 for l in f_test.readlines():
                     if len(l) == 0: break
@@ -90,6 +115,8 @@ class Data(object):
                         items = [int(i) for i in l.split(' ')]
                     except Exception:
                         continue
+                    if items[0]==self.n_users:
+                        break
                     uid, test_items = items[0], items[1:]
                     for i in test_items:
                         self.R_test[uid, i] = 1.0
@@ -152,12 +179,15 @@ class Data(object):
 
     # sample data for mini-batches
     def sample(self):
-        if self.batch_size <= self.n_users:
+        if self.batch_size <= self.n_users:            
             users = rd.sample(self.exist_users, self.batch_size)
         else:
             users = [rd.choice(self.exist_users) for _ in range(self.batch_size)]
-
+        #print(users)
+        #users = [1,2,3]
         def sample_pos_items_for_u(u, num):
+            #if u in self.train_items.keys():
+                #print("{} is in self.train_items".format(u))
             pos_items = self.train_items[u]
             n_pos_items = len(pos_items)
             pos_batch = []
@@ -168,6 +198,7 @@ class Data(object):
 
                 if pos_i_id not in pos_batch:
                     pos_batch.append(pos_i_id)
+
             return pos_batch
 
         def sample_neg_items_for_u(u, num):
@@ -185,8 +216,9 @@ class Data(object):
 
         pos_items, neg_items = [], []
         for u in users:
-            pos_items += sample_pos_items_for_u(u, 1)
-            neg_items += sample_neg_items_for_u(u, 1)
+            if u in self.train_items.keys():
+                pos_items += sample_pos_items_for_u(u, 1)
+                neg_items += sample_neg_items_for_u(u, 1)
 
         return users, pos_items, neg_items
 

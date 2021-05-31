@@ -13,8 +13,8 @@ def parse_args():
     parser.add_argument('--data_dir', type=str,
                         default='./data/',
                         help='Input data path.')
-    parser.add_argument('--dataset', type=str, default='Gowella',
-                        help='Dataset name: Amazond-book, Gowella, ml-100k')
+    parser.add_argument('--data_size', type=str, default='1M',
+                        help='Data Size(ex.NAME(Ratings|Movies|Users)) |__100K(100,000|9,000|600) |__1M(1,000,000|4,000|6,000) |__20M(20,000,000|27,000|138,000) |__25M(25,000,000|62,000|162,000) |__27M(27,000,000|58,000|280,000)')
     parser.add_argument('--results_dir', type=str, default='results',
                         help='Store model to path.')
     parser.add_argument('--n_epochs', type=int, default=400,

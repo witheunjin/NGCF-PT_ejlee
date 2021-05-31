@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # read parsed arguments
     args = parse_args()
     data_dir = args.data_dir
-    dataset = args.dataset
+    dataset = args.data_size
     batch_size = args.batch_size
     layers = eval(args.layers)
     emb_dim = args.emb_dim
@@ -87,18 +87,22 @@ if __name__ == '__main__':
                "Recall": [],
                "NDCG": [],
                "Training Time": []}
+    
 
     for epoch in range(args.n_epochs):
 
         t1 = time()
         loss = train(model, data_generator, optimizer)
         training_time = time()-t1
-        print("Epoch: {}, Training time: {:.2f}s, Loss: {:.4f}".
-            format(epoch, training_time, loss))
+        print("Epoch: {}/{}, Training time: {:.2f}s, Loss: {:.4f}".
+            format(epoch, args.n_epochs, training_time, loss))
 
         # print test evaluation metrics every N epochs (provided by args.eval_N)
         
-        if should_stop == True: break
+        if should_stop == True: 
+            print('Training is ended successfully.')
+            break
+    print('Training is ended successfully.')
 
     # save
     
